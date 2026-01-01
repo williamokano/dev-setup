@@ -8,4 +8,4 @@
     - bash
     - dotfiles
     - terminal
-    # - neovim
+    - neovim

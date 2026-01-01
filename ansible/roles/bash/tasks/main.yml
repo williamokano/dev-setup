@@ -8,18 +8,21 @@
         else '/usr/local/bin/bash'
       }}
   when: ansible_system == "Darwin"
+  tags: [shell]
 
 - name: Set bash path (Linux)
   become: false
   set_fact:
     bash_shell: "{{ bash_shell_path_linux }}"
   when: ansible_system == "Linux"
+  tags: [shell]
 
 - name: Install Bash on Linux
   become: true
   package:
     name: bash
     state: present
+  tags: [shell]
 
 - name: Add Bash to allowed shells (macOS)
   become: true
@@ -28,6 +31,7 @@
     line: "{{ bash_shell }}"
     state: present
   when: ansible_system == "Darwin"
+  tags: [shell]
 
 - name: Set Bash as default shell
   become: true
@@ -35,3 +39,41 @@
     name: "{{ ansible_user_id }}"
     shell: "{{ bash_shell }}"
   when: set_bash_as_default_shell
+  tags: [shell]
+
+- name: Source managed shell config in .bashrc
+  become: false
+  blockinfile:
+    path: "{{ user_home }}/.bashrc"
+    create: true
+    marker: "# {mark} ANSIBLE MANAGED SHELL CONFIG"
+    block: |
+      # Load managed shell config
+      if [ -f "$HOME/.config/shell/common.sh" ]; then
+        source "$HOME/.config/shell/common.sh"
+      fi
+
+      if [ -f "$HOME/.config/shell/bash.sh" ]; then
+        source "$HOME/.config/shell/bash.sh"
+      fi
+  tags: [shell]
+
+- name: Ensure .bash_profile loads .bashrc
+  become: false
+  blockinfile:
+    path: "{{ user_home }}/.bash_profile"
+    create: true
+    marker: "# {mark} LOAD BASHRC"
+    block: |
+      if [ -f "$HOME/.bashrc" ]; then
+        source "$HOME/.bashrc"
+      fi
+  tags: [shell]
+
+- name: Stow shell config
+  become: false
+  command: stow shell
+  args:
+    chdir: "{{ dotfiles_dir }}"
+  changed_when: false
+  tags: [shell]

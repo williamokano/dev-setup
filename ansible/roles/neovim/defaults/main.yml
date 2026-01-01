@@ -1,0 +1,7 @@
+neovim_appimage_base_url: https://github.com/neovim/neovim/releases/latest/download
+neovim_appimage_x86_64: nvim-linux-x86_64.appimage
+neovim_appimage_arm64: nvim-linux-arm64.appimage
+neovim_install_path: "{{ user_home }}/.local/bin/nvim"
+
+macos_nvim_path_arm: /opt/homebrew/bin/nvim
+macos_nvim_path_intel: /usr/local/bin/nvim
