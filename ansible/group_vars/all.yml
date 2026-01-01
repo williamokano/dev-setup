@@ -1,0 +1,2 @@
+user_home: "{{ lookup('env', 'HOME') }}"
+config_dir: "{{ user_home }}/.config"

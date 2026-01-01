@@ -1,0 +1,6 @@
+nerd_fonts:
+  - FiraCode
+  - JetBrainsMono
+
+font_dir_linux: "{{ user_home }}/.local/share/fonts"
+font_dir_macos: "{{ user_home }}/Library/Fonts"

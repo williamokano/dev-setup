@@ -1,0 +1,11 @@
+- name: Set global git config
+  become: false
+  git_config:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+    scope: global
+  loop:
+    - { name: user.name, value: "William Okano" }
+    - { name: user.email, value: "williamokano@gmail.com" }
+  tags:
+    - git

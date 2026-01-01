@@ -1,0 +1,5 @@
+core_packages:
+  - git
+  - curl
+  - tmux
+  - stow

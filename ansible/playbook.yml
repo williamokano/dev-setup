@@ -1,0 +1,11 @@
+- name: Bootstrap local machine
+  hosts: localhost
+  connection: local
+
+  roles:
+    - core
+    - fonts
+    - dotfiles
+    - git
+    - terminal
+    # - neovim

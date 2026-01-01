@@ -1,0 +1,42 @@
+- name: Install Alacritty
+  become: true
+  package:
+    name: alacritty
+    state: present
+  tags:
+    - terminal
+    - alacritty
+
+- name: Install tmux plugin manager (TPM)
+  become: false
+  git:
+    repo: https://github.com/tmux-plugins/tpm
+    dest: "{{ user_home }}/.tmux/plugins/tpm"
+    update: yes
+  tags:
+    - terminal
+    - tmux
+
+- name: Install tmux plugins via TPM (non-interactive)
+  become: false
+  command: "{{ user_home }}/.tmux/plugins/tpm/bin/install_plugins"
+  environment:
+    TMUX_PLUGIN_MANAGER_PATH: "{{ user_home }}/.tmux/plugins"
+  changed_when: false
+  tags:
+    - terminal
+    - tmux
+    - tpm
+
+- name: Stow terminal dotfiles
+  become: false
+  command: stow {{ item }}
+  args:
+    chdir: "{{ dotfiles_dir }}"
+  loop:
+    - alacritty
+    - tmux
+  changed_when: false
+  tags:
+    - terminal
+    - stow

@@ -1,0 +1,7 @@
+- name: Install core packages
+  become: true
+  package:
+    name: "{{ core_packages }}"
+    state: present
+  tags:
+    - core

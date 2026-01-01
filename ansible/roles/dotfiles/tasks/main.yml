@@ -1,0 +1,8 @@
+- name: Clone dotfiles repository
+  become: false
+  git:
+    repo: "{{ dotfiles_repo_https }}"
+    dest: "{{ dotfiles_dir }}"
+    update: yes
+  tags:
+    - dotfiles

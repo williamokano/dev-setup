@@ -1,0 +1,41 @@
+- name: Set font directory
+  set_fact:
+    font_dir: >-
+      {{
+        font_dir_macos if ansible_system == "Darwin"
+        else font_dir_linux
+      }}
+  tags:
+    - fonts
+
+- name: Debug font path
+  debug:
+    msg: "Font path {{ font_dir }}"
+  tags:
+    - fonts
+
+
+- name: Creates font directory
+  file:
+    path: "{{ font_dir }}"
+    state: directory
+    mode: "0755"
+  tags:
+    - fonts
+
+- name: Install Nerd Fonts
+  unarchive:
+    src: "https://github.com/ryanoasis/nerd-fonts/releases/latest/download/{{ item }}.zip"
+    dest: "{{ font_dir }}"
+    remote_src: yes
+    creates: "{{ font_dir }}/{{ item }} Nerd Font Complete.ttf"
+  loop: "{{ nerd_fonts }}"
+  tags:
+    - fonts
+
+- name: Refresh font cache (Linux only)
+  command: fc-cache -fv
+  when: ansible_system == "Linux"
+  changed_when: false
+  tags:
+    - fonts
