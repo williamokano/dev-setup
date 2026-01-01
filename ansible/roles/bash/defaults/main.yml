@@ -1,0 +1,4 @@
+bash_shell_path_macos: /opt/homebrew/bin/bash
+bash_shell_path_linux: /usr/bin/bash
+
+set_bash_as_default_shell: true

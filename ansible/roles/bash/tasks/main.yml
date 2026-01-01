@@ -1,0 +1,37 @@
+- name: Detect Homebrew bash path (macOS)
+  become: false
+  set_fact:
+    bash_shell: >-
+      {{
+        '/opt/homebrew/bin/bash'
+        if ansible_system == 'Darwin' and ansible_architecture == 'arm64'
+        else '/usr/local/bin/bash'
+      }}
+  when: ansible_system == "Darwin"
+
+- name: Set bash path (Linux)
+  become: false
+  set_fact:
+    bash_shell: "{{ bash_shell_path_linux }}"
+  when: ansible_system == "Linux"
+
+- name: Install Bash on Linux
+  become: true
+  package:
+    name: bash
+    state: present
+
+- name: Add Bash to allowed shells (macOS)
+  become: true
+  lineinfile:
+    path: /etc/shells
+    line: "{{ bash_shell }}"
+    state: present
+  when: ansible_system == "Darwin"
+
+- name: Set Bash as default shell
+  become: true
+  user:
+    name: "{{ ansible_user_id }}"
+    shell: "{{ bash_shell }}"
+  when: set_bash_as_default_shell
