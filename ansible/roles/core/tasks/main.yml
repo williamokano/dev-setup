@@ -5,3 +5,87 @@
     state: present
   tags:
     - core
+
+- name: Install ripgrep and fd
+  become: true
+  package:
+    name:
+      - ripgrep
+      - fd-find
+    state: present
+  when: ansible_os_family == "Debian"
+  tags: [core, telescope]
+
+- name: Symlink fd for Debian-based systems
+  become: false
+  file:
+    src: /usr/bin/fdfind
+    dest: "{{ ansible_env.HOME }}/.local/bin/fd"
+    state: link
+  when:
+    - ansible_os_family == "Debian"
+    - ansible_facts['distribution'] != "Ubuntu Core"
+  tags: [core, telescope]
+
+- name: Try installing lazygit via package manager
+  become: true
+  package:
+    name: lazygit
+    state: present
+  failed_when: false
+  tags: [core, git]
+
+- name: Check if lazygit is installed
+  command: lazygit --version
+  register: lazygit_check
+  failed_when: false
+  changed_when: false
+  tags: [core, git]
+
+- name: Get latest lazygit release
+  uri:
+    url: https://api.github.com/repos/jesseduffield/lazygit/releases/latest
+    return_content: true
+  register: lazygit_release
+  when:
+    - lazygit_check.rc != 0
+    - ansible_system == "Linux"
+  tags: [core, git]
+
+- name: Set lazygit download URL
+  set_fact:
+    lazygit_url: "https://github.com/jesseduffield/lazygit/releases/download/{{ lazygit_release.json.tag_name }}/lazygit_{{ lazygit_release.json.tag_name | regex_replace('^v', '') }}_Linux_x86_64.tar.gz"
+  when:
+    - lazygit_check.rc != 0
+    - ansible_system == "Linux"
+  tags: [core, git]
+
+- name: Download lazygit archive
+  get_url:
+    url: "{{ lazygit_url }}"
+    dest: /tmp/lazygit.tar.gz
+    mode: "0644"
+  when:
+    - lazygit_check.rc != 0
+    - ansible_system == "Linux"
+  tags: [core, git]
+
+- name: Extract lazygit
+  unarchive:
+    src: /tmp/lazygit.tar.gz
+    dest: /tmp
+    remote_src: true
+  when:
+    - lazygit_check.rc != 0
+    - ansible_system == "Linux"
+  tags: [core, git]
+
+- name: Install lazygit to ~/.local/bin
+  copy:
+    src: /tmp/lazygit
+    dest: "{{ ansible_env.HOME }}/.local/bin/lazygit"
+    mode: "0755"
+  when:
+    - lazygit_check.rc != 0
+    - ansible_system == "Linux"
+  tags: [core, git]
