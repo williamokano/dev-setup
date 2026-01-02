@@ -9,6 +9,7 @@
     - zsh
     - dotfiles
     - nodejs
+    - go
     - gemini_cli
     - terminal
     - neovim

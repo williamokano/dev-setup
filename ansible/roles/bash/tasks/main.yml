@@ -90,7 +90,7 @@
           export OSH="{{ user_home }}/.oh-my-bash"
 
           # Set name of the theme to load.
-          OSH_THEME="robbyrussell"
+          OSH_THEME="font"
 
           # Load oh-my-bash
           if [ -f "$OSH/oh-my-bash.sh" ]; then

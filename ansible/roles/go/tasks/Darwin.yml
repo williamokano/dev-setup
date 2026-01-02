@@ -1,0 +1,36 @@
+---
+- name: "Install Go using Homebrew"
+  community.general.homebrew:
+    name: "go@{{ go_version.split('.')[0] }}.{{ go_version.split('.')[1] }}"
+    state: present
+
+- name: Verify go executable exists (macOS)
+  ansible.builtin.command: "which go"
+  register: go_binary_path
+  changed_when: false
+  failed_when: false
+  tags:
+    - go
+
+- name: Fail if go executable does not exist (macOS)
+  ansible.builtin.fail:
+    msg: "Go executable not found in PATH after Homebrew installation."
+  when: go_binary_path.rc != 0
+  tags:
+    - go
+
+- name: Verify go version (macOS)
+  ansible.builtin.command: "go version"
+  register: go_version_check
+  changed_when: false
+  failed_when: false
+  when: go_binary_path.rc == 0
+  tags:
+    - go
+
+- name: Debug installed go version (macOS)
+  ansible.builtin.debug:
+    msg: "Installed Go version: {{ go_version_check.stdout | default('Not found') }}"
+  when: go_binary_path.rc == 0
+  tags:
+    - go

@@ -1,7 +1,6 @@
-- name: Install Node.js (includes npm)
+- name: Install Node.js on Arch Linux
   become: true
-  pacman:
+  package:
     name: nodejs
     state: present
-    update_cache: yes
-
+  tags: [nodejs]

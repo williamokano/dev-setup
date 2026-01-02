@@ -21,4 +21,3 @@
   register: node_check
   changed_when: false
   tags: [nodejs]
-

@@ -1,0 +1,71 @@
+---
+- name: Check current go version
+  ansible.builtin.command: "go version"
+  register: go_version_output
+  changed_when: false
+  failed_when: false
+
+- name: Set go_installed fact
+  ansible.builtin.set_fact:
+    go_installed: "{{ go_version_output.rc == 0 and go_version in go_version_output.stdout }}"
+
+- name: Install Go for Debian-based systems
+  when: not go_installed
+  block:
+    - name: "Download Go {{ go_version }} for Linux (amd64)"
+      ansible.builtin.get_url:
+        url: "https://golang.org/dl/go{{ go_version }}.linux-amd64.tar.gz"
+        dest: "/tmp/go{{ go_version }}.linux-amd64.tar.gz"
+        mode: '0644'
+        checksum: "sha256:9e9b755d63b36acf30c12a9a3fc379243714c1c6d3dd72861da637f336ebb35b"
+
+    - name: Remove old go installation
+      ansible.builtin.file:
+        path: "{{ go_install_dir }}/go"
+        state: absent
+      become: true
+
+    - name: "Extract Go {{ go_version }} archive"
+      ansible.builtin.unarchive:
+        src: "/tmp/go{{ go_version }}.linux-amd64.tar.gz"
+        dest: "{{ go_install_dir }}"
+        remote_src: true
+      become: true
+
+    - name: "Set up PATH for Go"
+      ansible.builtin.template:
+        src: go.sh.j2
+        dest: /etc/profile.d/go.sh
+        mode: '0755'
+      become: true
+
+- name: Verify go executable exists
+  ansible.builtin.stat:
+    path: "{{ go_install_dir }}/go/bin/go"
+  register: go_binary_stat
+  changed_when: false
+  tags:
+    - go
+
+- name: Fail if go executable does not exist
+  ansible.builtin.fail:
+    msg: "Go executable not found at {{ go_install_dir }}/go/bin/go after installation."
+  when: not go_binary_stat.stat.exists
+  tags:
+    - go
+
+- name: Verify go version from installed binary
+  ansible.builtin.command: "{{ go_install_dir }}/go/bin/go version"
+  register: go_version_check_binary
+  changed_when: false
+  failed_when: false
+  when: go_binary_stat.stat.exists
+  tags:
+    - go
+
+- name: Debug installed go version
+  ansible.builtin.debug:
+    msg: "Installed Go version: {{ go_version_check_binary.stdout | default('Not found') }}"
+  when: go_binary_stat.stat.exists
+  tags:
+    - go

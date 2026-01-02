@@ -6,4 +6,3 @@
   community.general.homebrew:
     name: node
     state: present
-

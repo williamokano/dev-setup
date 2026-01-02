@@ -1,0 +1,3 @@
+---
+go_version: "1.25.5"
+go_install_dir: "/usr/local"
