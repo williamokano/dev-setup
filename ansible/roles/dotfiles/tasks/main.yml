@@ -1,8 +1,48 @@
+---
+- name: Check for dotfiles git repository
+  ansible.builtin.stat:
+    path: "{{ dotfiles_dir }}/.git"
+  register: dotfiles_repo
+  tags:
+    - dotfiles
+
 - name: Clone dotfiles repository
-  become: false
-  git:
-    repo: "{{ dotfiles_repo_https }}"
+  ansible.builtin.git:
+    repo: "{{ dotfiles_repo_ssh }}"
     dest: "{{ dotfiles_dir }}"
-    update: yes
+    version: main
+  when: not dotfiles_repo.stat.exists
+  tags:
+    - dotfiles
+
+- name: Update existing dotfiles repository
+  when: dotfiles_repo.stat.exists
+  block:
+    - name: Ensure remote is set to SSH URL
+      ansible.builtin.command: "git remote set-url origin {{ dotfiles_repo_ssh }}"
+      args:
+        chdir: "{{ dotfiles_dir }}"
+      changed_when: false
+
+    - name: Stash local changes
+      ansible.builtin.command: git stash
+      args:
+        chdir: "{{ dotfiles_dir }}"
+      register: stash_result
+      changed_when: "'No local changes to save' not in stash_result.stdout"
+
+    - name: Pull latest changes
+      ansible.builtin.git:
+        repo: "{{ dotfiles_repo_ssh }}"
+        dest: "{{ dotfiles_dir }}"
+        version: main
+        update: true
+
+    - name: Pop stashed changes
+      ansible.builtin.command: git stash pop
+      args:
+        chdir: "{{ dotfiles_dir }}"
+      when: stash_result.changed
+      ignore_errors: true # Pop can fail with conflicts
   tags:
     - dotfiles
