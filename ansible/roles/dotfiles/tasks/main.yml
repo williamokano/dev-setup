@@ -23,6 +23,8 @@
       args:
         chdir: "{{ dotfiles_dir }}"
       changed_when: false
+      tags:
+        - dotfiles
 
     - name: Stash local changes
       ansible.builtin.command: git stash
@@ -30,6 +32,8 @@
         chdir: "{{ dotfiles_dir }}"
       register: stash_result
       changed_when: "'No local changes to save' not in stash_result.stdout"
+      tags:
+        - dotfiles
 
     - name: Pull latest changes
       ansible.builtin.git:
@@ -37,6 +41,8 @@
         dest: "{{ dotfiles_dir }}"
         version: main
         update: true
+      tags:
+        - dotfiles
 
     - name: Pop stashed changes
       ansible.builtin.command: git stash pop
@@ -44,5 +50,7 @@
         chdir: "{{ dotfiles_dir }}"
       when: stash_result.changed
       ignore_errors: true # Pop can fail with conflicts
+      tags:
+        - dotfiles
   tags:
     - dotfiles

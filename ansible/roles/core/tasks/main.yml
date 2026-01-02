@@ -1,20 +1,10 @@
 - name: Install core packages
   become: true
   package:
-    name: "{{ core_packages }}"
+    name: "{{ core_packages + ['fd-find'] if ansible_os_family == 'Debian' else core_packages }}"
     state: present
   tags:
     - core
-
-- name: Install ripgrep and fd
-  become: true
-  package:
-    name:
-      - ripgrep
-      - fd-find
-    state: present
-  when: ansible_os_family == "Debian"
-  tags: [core, telescope]
 
 - name: Symlink fd for Debian-based systems
   become: false

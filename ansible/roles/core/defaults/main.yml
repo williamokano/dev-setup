@@ -1,5 +1,8 @@
 core_packages:
   - git
   - curl
-  - tmux
   - stow
+  - ripgrep
+  - bash
+  - alacritty
+  - tmux

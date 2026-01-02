@@ -32,10 +32,4 @@
   loop: "{{ nerd_fonts }}"
   tags:
     - fonts
-
-- name: Refresh font cache (Linux only)
-  command: fc-cache -fv
-  when: ansible_system == "Linux"
-  changed_when: false
-  tags:
-    - fonts
+  notify: Refresh font cache

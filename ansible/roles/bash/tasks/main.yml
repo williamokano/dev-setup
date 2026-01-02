@@ -17,13 +17,6 @@
   when: ansible_system == "Linux"
   tags: [shell]
 
-- name: Install Bash on Linux
-  become: true
-  package:
-    name: bash
-    state: present
-  tags: [shell]
-
 - name: Add Bash to allowed shells (macOS)
   become: true
   lineinfile:

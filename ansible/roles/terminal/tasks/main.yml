@@ -1,12 +1,3 @@
-- name: Install Alacritty
-  become: true
-  package:
-    name: alacritty
-    state: present
-  tags:
-    - terminal
-    - alacritty
-
 - name: Install tmux plugin manager (TPM)
   become: false
   git:

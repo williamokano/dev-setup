@@ -1,6 +1,6 @@
 ---
 # =========================
-# Neovim role – FINAL
+# Neovim role
 # =========================
 
 # -------------------------
@@ -66,35 +66,6 @@
   changed_when: false
   tags: [neovim]
 
-
-# =========================
-# vim / vi → nvim (PORTABLE)
-# =========================
-
-# -------------------------
-# Linux: vim → nvim
-# -------------------------
-- name: Make vim open Neovim (Linux)
-  file:
-    src: "{{ neovim_install_path }}"
-    dest: "{{ user_home }}/.local/bin/vim"
-    state: link
-    force: true
-  when: ansible_os_family != "Darwin"
-  tags: [neovim, vim]
-
-# -------------------------
-# Linux: vi → nvim
-# -------------------------
-- name: Make vi open Neovim (Linux)
-  file:
-    src: "{{ neovim_install_path }}"
-    dest: "{{ user_home }}/.local/bin/vi"
-    state: link
-    force: true
-  when: ansible_os_family != "Darwin"
-  tags: [neovim, vim]
-
 # -------------------------
 # macOS: detect Homebrew Neovim path
 # -------------------------
@@ -109,10 +80,6 @@
   when: ansible_os_family == "Darwin"
   tags: [neovim, vim]
 
-# =========================
-# vim / vi → nvim (FINAL, GUARANTEED)
-# =========================
-
 - name: Check if Neovim binary exists
   stat:
     path: "{{ neovim_install_path }}"
@@ -126,27 +93,15 @@
   when: not nvim_bin.stat.exists
   tags: [neovim, vim]
 
-- name: Ensure local bin directory exists
-  file:
-    path: "{{ user_home }}/.local/bin"
-    state: directory
-    mode: "0755"
-  tags: [neovim, vim]
-
-- name: Create vim → nvim symlink
+- name: Create vi/vim to nvim symlinks
   file:
     src: "{{ neovim_install_path }}"
-    dest: "{{ user_home }}/.local/bin/vim"
+    dest: "{{ user_home }}/.local/bin/{{ item }}"
     state: link
     force: true
-  tags: [neovim, vim]
-
-- name: Create vi → nvim symlink
-  file:
-    src: "{{ neovim_install_path }}"
-    dest: "{{ user_home }}/.local/bin/vi"
-    state: link
-    force: true
+  loop:
+    - vi
+    - vim
   tags: [neovim, vim]
 
 - name: Verify vim symlink exists
@@ -160,25 +115,6 @@
   fail:
     msg: "vim symlink was not created even though nvim exists"
   when: not vim_shim.stat.exists
-  tags: [neovim, vim]
-
-# -------------------------
-# Guard: fail loudly if shim missing (Linux)
-# -------------------------
-- name: Verify vim shim exists (Linux)
-  stat:
-    path: "{{ user_home }}/.local/bin/vim"
-  register: vim_shim
-  changed_when: false
-  when: ansible_os_family != "Darwin"
-  tags: [neovim, vim]
-
-- name: Fail if vim shim was not created
-  fail:
-    msg: "vim symlink was not created; neovim role is misconfigured"
-  when:
-    - ansible_os_family != "Darwin"
-    - not vim_shim.stat.exists
   tags: [neovim, vim]
 
 # -------------------------

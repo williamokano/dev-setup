@@ -1,3 +1,2 @@
 dotfiles_repo_https: https://github.com/williamokano/dotfiles.git
 dotfiles_repo_ssh: git@github.com:williamokano/dotfiles.git
-dotfiles_dir: "{{ user_home }}/.dotfiles"
