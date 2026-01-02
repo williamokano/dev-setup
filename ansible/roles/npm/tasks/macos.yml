@@ -1,0 +1,9 @@
+- name: Ensure Homebrew is installed
+  community.general.homebrew:
+    state: present
+
+- name: Install Node.js (includes npm)
+  community.general.homebrew:
+    name: node
+    state: present
+

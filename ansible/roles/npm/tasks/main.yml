@@ -1,0 +1,24 @@
+- name: Install Node.js on macOS
+  import_tasks: macos.yml
+  when: ansible_facts.os_family == "Darwin"
+  tags: [npm]
+
+- name: Install Node.js on Debian-based systems
+  import_tasks: debian.yml
+  when: ansible_facts.os_family == "Debian"
+  tags: [npm]
+
+- name: Install Node.js on Arch Linux
+  import_tasks: arch.yml
+  when: ansible_facts.os_family == "Archlinux"
+  tags: [npm]
+
+- name: Verify node and npm
+  command: "{{ item }}"
+  loop:
+    - node --version
+    - npm --version
+  register: node_check
+  changed_when: false
+  tags: [npm]
+
