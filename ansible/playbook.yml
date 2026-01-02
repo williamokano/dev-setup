@@ -6,6 +6,7 @@
     - core
     - fonts
     - bash
+    - zsh
     - dotfiles
     - nodejs
     - gemini_cli

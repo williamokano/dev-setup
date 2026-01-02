@@ -70,3 +70,36 @@
     chdir: "{{ dotfiles_dir }}"
   changed_when: false
   tags: [shell]
+
+- name: Install oh-my-bash
+  block:
+    - name: Clone oh-my-bash repository
+      git:
+        repo: https://github.com/ohmybash/oh-my-bash.git
+        dest: "{{ user_home }}/.oh-my-bash"
+        depth: 1
+        update: yes
+
+    - name: Source oh-my-bash in .bashrc
+      blockinfile:
+        path: "{{ user_home }}/.bashrc"
+        create: true
+        marker: "# {mark} ANSIBLE MANAGED OH MY BASH"
+        block: |
+          # Path to your oh-my-bash installation.
+          export OSH="{{ user_home }}/.oh-my-bash"
+
+          # Set name of the theme to load.
+          OSH_THEME="font"
+
+          # Load oh-my-bash
+          if [ -f "$OSH/oh-my-bash.sh" ]; then
+            source "$OSH/oh-my-bash.sh"
+          fi
+  when: >
+    ansible_os_family == "Debian" or
+    ansible_os_family == "Archlinux" or
+    ansible_system == "Darwin"
+  tags:
+    - bash
+    - oh-my-bash
