@@ -1,0 +1,108 @@
+---
+- name: Find GTK 3 immodules.cache path
+  ansible.builtin.find:
+    paths: "/usr/lib/{{ ansible_facts.architecture }}-linux-gnu"
+    patterns: "gtk-3.0/*/immodules.cache"
+    recurse: true
+    file_type: file
+  register: gtk3_immodules_cache
+  when: ansible_os_family == "Debian"
+  tags:
+    - keyboard
+    - cedilla
+
+- name: Find GTK 2 immodules.cache path
+  ansible.builtin.find:
+    paths: "/usr/lib/{{ ansible_facts.architecture }}-linux-gnu"
+    patterns: "gtk-2.0/*/immodules.cache"
+    recurse: true
+    file_type: file
+  register: gtk2_immodules_cache
+  when: ansible_os_family == "Debian"
+  tags:
+    - keyboard
+    - cedilla
+
+- name: Modify GTK 3 immodules.cache for cedilla
+  ansible.builtin.replace:
+    path: "{{ item.path }}"
+    regexp: '("cedilla" "Cedilla" "gtk30" "/usr/share/locale" "(?:[^"]*)")'
+    replace: '\1:en"'
+    backup: true
+  loop: "{{ gtk3_immodules_cache.files }}"
+  when: ansible_os_family == "Debian" and gtk3_immodules_cache.files | length > 0
+  become: true
+  tags:
+    - keyboard
+    - cedilla
+
+- name: Modify GTK 2 immodules.cache for cedilla
+  ansible.builtin.replace:
+    path: "{{ item.path }}"
+    regexp: '("cedilla" "Cedilla" "gtk20" "/usr/share/locale" "(?:[^"]*)")'
+    replace: '\1:en"'
+    backup: true
+  loop: "{{ gtk2_immodules_cache.files }}"
+  when: ansible_os_family == "Debian" and gtk2_immodules_cache.files | length > 0
+  become: true
+  tags:
+    - keyboard
+    - cedilla
+
+- name: Replace ć with ç in Compose file
+  ansible.builtin.replace:
+    path: "/usr/share/X11/locale/en_US.UTF-8/Compose"
+    regexp: 'Compose <dead_acute> <c> *: "ć"'
+    replace: 'Compose <dead_acute> <c> *: "ç"'
+    backup: true
+  when: ansible_os_family == "Debian"
+  become: true
+  tags:
+    - keyboard
+    - cedilla
+
+- name: Replace Ć with Ç in Compose file
+  ansible.builtin.replace:
+    path: "/usr/share/X11/locale/en_US.UTF-8/Compose"
+    regexp: 'Compose <dead_acute> <C> *: "Ć"'
+    replace: 'Compose <dead_acute> <C> *: "Ç"'
+    backup: true
+  when: ansible_os_family == "Debian"
+  become: true
+  tags:
+    - keyboard
+    - cedilla
+
+- name: Set GTK_IM_MODULE for cedilla
+  ansible.builtin.lineinfile:
+    path: "/etc/environment"
+    regexp: '^GTK_IM_MODULE='
+    line: "GTK_IM_MODULE=cedilla"
+    state: present
+    backup: true
+  when: ansible_os_family == "Debian"
+  become: true
+  tags:
+    - keyboard
+    - cedilla
+
+- name: Set QT_IM_MODULE for cedilla
+  ansible.builtin.lineinfile:
+    path: "/etc/environment"
+    regexp: '^QT_IM_MODULE='
+    line: "QT_IM_MODULE=cedilla"
+    state: present
+    backup: true
+  when: ansible_os_family == "Debian"
+  become: true
+  tags:
+    - keyboard
+    - cedilla
+
+- name: Inform user about required reboot
+  ansible.builtin.debug:
+    msg: "Keyboard layout changes require a system reboot to take full effect."
+  when: ansible_os_family == "Debian"
+  tags:
+    - keyboard
+    - cedilla
