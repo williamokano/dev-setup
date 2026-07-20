@@ -73,4 +73,4 @@ if [[ -n "${DEV_SETUP_SSH_KEY:-}" ]]; then
 fi
 
 echo "▶ Running Ansible..."
-ansible-playbook ansible/playbook.yml --ask-become-pass
+ansible-playbook -i ansible/inventory.yml ansible/playbook.yml --ask-become-pass
