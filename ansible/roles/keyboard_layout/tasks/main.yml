@@ -6,7 +6,7 @@
     recurse: true
     file_type: file
   register: gtk3_immodules_cache
-  when: ansible_os_family == "Debian"
+  when: ansible_facts.os_family == "Debian"
   tags:
     - keyboard
     - cedilla
@@ -18,7 +18,7 @@
     recurse: true
     file_type: file
   register: gtk2_immodules_cache
-  when: ansible_os_family == "Debian"
+  when: ansible_facts.os_family == "Debian"
   tags:
     - keyboard
     - cedilla
@@ -30,7 +30,7 @@
     replace: '\1:en"'
     backup: true
   loop: "{{ gtk3_immodules_cache.files }}"
-  when: ansible_os_family == "Debian" and gtk3_immodules_cache.files | length > 0
+  when: ansible_facts.os_family == "Debian" and gtk3_immodules_cache.files | length > 0
   become: true
   tags:
     - keyboard
@@ -43,7 +43,7 @@
     replace: '\1:en"'
     backup: true
   loop: "{{ gtk2_immodules_cache.files }}"
-  when: ansible_os_family == "Debian" and gtk2_immodules_cache.files | length > 0
+  when: ansible_facts.os_family == "Debian" and gtk2_immodules_cache.files | length > 0
   become: true
   tags:
     - keyboard
@@ -55,7 +55,7 @@
     regexp: 'Compose <dead_acute> <c> *: "ć"'
     replace: 'Compose <dead_acute> <c> *: "ç"'
     backup: true
-  when: ansible_os_family == "Debian"
+  when: ansible_facts.os_family == "Debian"
   become: true
   tags:
     - keyboard
@@ -67,7 +67,7 @@
     regexp: 'Compose <dead_acute> <C> *: "Ć"'
     replace: 'Compose <dead_acute> <C> *: "Ç"'
     backup: true
-  when: ansible_os_family == "Debian"
+  when: ansible_facts.os_family == "Debian"
   become: true
   tags:
     - keyboard
@@ -80,7 +80,7 @@
     line: "GTK_IM_MODULE=cedilla"
     state: present
     backup: true
-  when: ansible_os_family == "Debian"
+  when: ansible_facts.os_family == "Debian"
   become: true
   tags:
     - keyboard
@@ -93,7 +93,7 @@
     line: "QT_IM_MODULE=cedilla"
     state: present
     backup: true
-  when: ansible_os_family == "Debian"
+  when: ansible_facts.os_family == "Debian"
   become: true
   tags:
     - keyboard
@@ -102,7 +102,7 @@
 - name: Inform user about required reboot
   ansible.builtin.debug:
     msg: "Keyboard layout changes require a system reboot to take full effect."
-  when: ansible_os_family == "Debian"
+  when: ansible_facts.os_family == "Debian"
   tags:
     - keyboard
     - cedilla

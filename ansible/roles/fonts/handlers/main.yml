@@ -1,4 +1,4 @@
 - name: Refresh font cache
   command: fc-cache -fv
-  when: ansible_system == "Linux"
+  when: ansible_facts.system == "Linux"
   changed_when: false

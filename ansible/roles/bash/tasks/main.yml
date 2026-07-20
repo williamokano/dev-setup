@@ -4,17 +4,17 @@
     bash_shell: >-
       {{
         '/opt/homebrew/bin/bash'
-        if ansible_system == 'Darwin' and ansible_architecture == 'arm64'
+        if ansible_facts.system == 'Darwin' and ansible_facts.architecture == 'arm64'
         else '/usr/local/bin/bash'
       }}
-  when: ansible_system == "Darwin"
+  when: ansible_facts.system == "Darwin"
   tags: [shell]
 
 - name: Set bash path (Linux)
   become: false
   set_fact:
     bash_shell: "{{ bash_shell_path_linux }}"
-  when: ansible_system == "Linux"
+  when: ansible_facts.system == "Linux"
   tags: [shell]
 
 - name: Add Bash to allowed shells (macOS)
@@ -23,13 +23,13 @@
     path: /etc/shells
     line: "{{ bash_shell }}"
     state: present
-  when: ansible_system == "Darwin"
+  when: ansible_facts.system == "Darwin"
   tags: [shell]
 
 - name: Set Bash as default shell
   become: true
   user:
-    name: "{{ ansible_user_id }}"
+    name: "{{ ansible_facts.user_id }}"
     shell: "{{ bash_shell }}"
   when: set_bash_as_default_shell
   tags: [shell]
@@ -97,9 +97,9 @@
             source "$OSH/oh-my-bash.sh"
           fi
   when: >
-    ansible_os_family == "Debian" or
-    ansible_os_family == "Archlinux" or
-    ansible_system == "Darwin"
+    ansible_facts.os_family == "Debian" or
+    ansible_facts.os_family == "Archlinux" or
+    ansible_facts.system == "Darwin"
   tags:
     - bash
     - oh-my-bash

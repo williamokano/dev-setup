@@ -1,9 +1,9 @@
 - name: Install core packages (Linux)
   become: true
   package:
-    name: "{{ core_packages + ['fd-find'] if ansible_os_family == 'Debian' else core_packages }}"
+    name: "{{ core_packages + ['fd-find'] if ansible_facts.os_family == 'Debian' else core_packages }}"
     state: present
-  when: ansible_system != "Darwin"
+  when: ansible_facts.system != "Darwin"
   tags:
     - core
 
@@ -13,7 +13,7 @@
   community.general.homebrew:
     name: "{{ core_brew_formulae }}"
     state: present
-  when: ansible_system == "Darwin"
+  when: ansible_facts.system == "Darwin"
   tags:
     - core
 
@@ -22,7 +22,7 @@
   community.general.homebrew_cask:
     name: "{{ core_brew_casks }}"
     state: present
-  when: ansible_system == "Darwin"
+  when: ansible_facts.system == "Darwin"
   tags:
     - core
 
@@ -30,15 +30,15 @@
   become: false
   file:
     src: /usr/bin/fdfind
-    dest: "{{ ansible_env.HOME }}/.local/bin/fd"
+    dest: "{{ ansible_facts.env.HOME }}/.local/bin/fd"
     state: link
   when:
-    - ansible_os_family == "Debian"
+    - ansible_facts.os_family == "Debian"
     - ansible_facts['distribution'] != "Ubuntu Core"
   tags: [core, telescope]
 
 - name: Try installing lazygit via package manager
-  become: "{{ ansible_system != 'Darwin' }}"
+  become: "{{ ansible_facts.system != 'Darwin' }}"
   package:
     name: lazygit
     state: present
@@ -59,7 +59,7 @@
   register: lazygit_release
   when:
     - lazygit_check.rc != 0
-    - ansible_system == "Linux"
+    - ansible_facts.system == "Linux"
   tags: [core, git]
 
 - name: Set lazygit download URL
@@ -67,7 +67,7 @@
     lazygit_url: "https://github.com/jesseduffield/lazygit/releases/download/{{ lazygit_release.json.tag_name }}/lazygit_{{ lazygit_release.json.tag_name | regex_replace('^v', '') }}_Linux_x86_64.tar.gz"
   when:
     - lazygit_check.rc != 0
-    - ansible_system == "Linux"
+    - ansible_facts.system == "Linux"
   tags: [core, git]
 
 - name: Download lazygit archive
@@ -77,7 +77,7 @@
     mode: "0644"
   when:
     - lazygit_check.rc != 0
-    - ansible_system == "Linux"
+    - ansible_facts.system == "Linux"
   tags: [core, git]
 
 - name: Extract lazygit
@@ -87,15 +87,15 @@
     remote_src: true
   when:
     - lazygit_check.rc != 0
-    - ansible_system == "Linux"
+    - ansible_facts.system == "Linux"
   tags: [core, git]
 
 - name: Install lazygit to ~/.local/bin
   copy:
     src: /tmp/lazygit
-    dest: "{{ ansible_env.HOME }}/.local/bin/lazygit"
+    dest: "{{ ansible_facts.env.HOME }}/.local/bin/lazygit"
     mode: "0755"
   when:
     - lazygit_check.rc != 0
-    - ansible_system == "Linux"
+    - ansible_facts.system == "Linux"
   tags: [core, git]

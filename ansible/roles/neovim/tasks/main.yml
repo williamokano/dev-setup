@@ -21,10 +21,10 @@
     neovim_appimage_name: >-
       {{
         neovim_appimage_arm64
-        if ansible_architecture in ['aarch64', 'arm64']
+        if ansible_facts.architecture in ['aarch64', 'arm64']
         else neovim_appimage_x86_64
       }}
-  when: ansible_os_family != "Darwin"
+  when: ansible_facts.os_family != "Darwin"
   tags: [neovim]
 
 # -------------------------
@@ -35,7 +35,7 @@
     url: "{{ neovim_appimage_base_url }}/{{ neovim_appimage_name }}"
     dest: "{{ neovim_install_path }}"
     mode: "0755"
-  when: ansible_os_family != "Darwin"
+  when: ansible_facts.os_family != "Darwin"
   tags: [neovim]
 
 # -------------------------
@@ -45,7 +45,7 @@
   community.general.homebrew:
     name: neovim
     state: latest
-  when: ansible_os_family == "Darwin"
+  when: ansible_facts.os_family == "Darwin"
   tags: [neovim]
 
 - name: Set neovim_install_path for macOS
@@ -53,10 +53,10 @@
     neovim_install_path: >-
       {{
         macos_nvim_path_arm
-        if ansible_architecture == 'arm64'
+        if ansible_facts.architecture == 'arm64'
         else macos_nvim_path_intel
       }}
-  when: ansible_os_family == "Darwin"
+  when: ansible_facts.os_family == "Darwin"
   tags: [neovim]
 
 # -------------------------

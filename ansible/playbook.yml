@@ -5,9 +5,9 @@
   roles:
     - core
     - fonts
+    - dotfiles
     - bash
     - zsh
-    - dotfiles
     - nodejs
     - go
     - gemini_cli

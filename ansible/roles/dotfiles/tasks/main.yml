@@ -59,7 +59,7 @@
     chdir: "{{ dotfiles_dir }}"
   loop:
     - XCompose
-  when: ansible_os_family == 'Debian'
+  when: ansible_facts.os_family == 'Debian'
   changed_when: false
   tags:
     - dotfiles

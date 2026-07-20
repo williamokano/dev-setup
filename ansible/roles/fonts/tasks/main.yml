@@ -2,7 +2,7 @@
   set_fact:
     font_dir: >-
       {{
-        font_dir_macos if ansible_system == "Darwin"
+        font_dir_macos if ansible_facts.system == "Darwin"
         else font_dir_linux
       }}
   tags:
