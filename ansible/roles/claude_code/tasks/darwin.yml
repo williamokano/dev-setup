@@ -1,0 +1,8 @@
+# The stable channel is the 'claude-code' cask; latest is 'claude-code@latest'.
+# Homebrew installs don't auto-update: upgrade via 'brew upgrade claude-code'.
+- name: Install Claude Code via Homebrew cask
+  become: false
+  community.general.homebrew_cask:
+    name: "{{ 'claude-code' if claude_code_channel == 'stable' else 'claude-code@latest' }}"
+    state: present
+  tags: [claude_code]

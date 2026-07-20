@@ -1,0 +1,17 @@
+# Anthropic publishes no pacman repository, so use the official native
+# installer (auto-updates itself in the background). Installs to
+# ~/.local/bin/claude, which is not necessarily on Ansible's PATH.
+- name: Install Claude Code via native installer
+  become: false
+  shell: |
+    set -o pipefail
+    curl -fsSL https://claude.ai/install.sh | bash -s {{ claude_code_channel }}
+  args:
+    executable: /bin/bash
+    creates: "{{ user_home }}/.local/bin/claude"
+  tags: [claude_code]
+
+- name: Set Claude Code binary path
+  set_fact:
+    claude_code_bin: "{{ user_home }}/.local/bin/claude"
+  tags: [claude_code]

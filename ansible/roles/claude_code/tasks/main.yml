@@ -1,0 +1,25 @@
+- name: Install Claude Code on macOS
+  import_tasks: darwin.yml
+  when: ansible_facts.os_family == "Darwin"
+  tags: [claude_code]
+
+- name: Install Claude Code on Debian-based systems
+  import_tasks: debian.yml
+  when: ansible_facts.os_family == "Debian"
+  tags: [claude_code]
+
+- name: Install Claude Code on Arch Linux
+  import_tasks: arch.yml
+  when: ansible_facts.os_family == "Archlinux"
+  tags: [claude_code]
+
+- name: Verify Claude Code installation
+  command: "{{ claude_code_bin | default('claude') }} --version"
+  register: claude_code_version
+  changed_when: false
+  tags: [claude_code]
+
+- name: Debug installed Claude Code version
+  debug:
+    msg: "Installed Claude Code version: {{ claude_code_version.stdout }}"
+  tags: [claude_code]

@@ -1,0 +1,3 @@
+# Release channel: "stable" (about a week behind, skips releases with major
+# regressions) or "latest" (every release as soon as it ships)
+claude_code_channel: stable

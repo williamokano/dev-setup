@@ -1,0 +1,31 @@
+# deb822_repository needs python3-debian on the host
+- name: Install required packages
+  become: true
+  apt:
+    name:
+      - ca-certificates
+      - curl
+      - python3-debian
+    state: present
+    update_cache: yes
+  tags: [claude_code]
+
+- name: Add Claude Code apt repository
+  become: true
+  ansible.builtin.deb822_repository:
+    name: claude-code
+    types: deb
+    uris: "https://downloads.claude.ai/claude-code/apt/{{ claude_code_channel }}"
+    suites: "{{ claude_code_channel }}"
+    components: main
+    signed_by: https://downloads.claude.ai/keys/claude-code.asc
+    state: present
+  tags: [claude_code]
+
+- name: Install Claude Code
+  become: true
+  apt:
+    name: claude-code
+    state: present
+    update_cache: yes
+  tags: [claude_code]
