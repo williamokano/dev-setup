@@ -1,11 +1,18 @@
-# On macOS npm lives in the user-writable Homebrew prefix; running it as
-# root would leave root-owned files there and break brew
+# Global npm packages go into the user-owned mise Node.js prefix — no root
 - name: Install Gemini CLI globally
-  become: "{{ ansible_facts.system != 'Darwin' }}"
+  become: false
   npm:
     name: "@google/gemini-cli"
     global: true
     state: present
+    executable: "{{ npm_bin | default(user_home ~ '/.local/share/mise/shims/npm') }}"
   tags:
     - gemini
 
+# Make the newly installed CLI's binary available through mise shims
+- name: Refresh mise shims
+  become: false
+  command: mise reshim
+  changed_when: false
+  tags:
+    - gemini

@@ -1,25 +1,78 @@
-- name: Install Node.js on macOS
-  import_tasks: macos.yml
+- name: Check if Node.js {{ nodejs_version }} is installed via mise
+  become: false
+  command: "mise where node@{{ nodejs_version }}"
+  register: mise_node_where
+  changed_when: false
+  failed_when: false
+  tags: [nodejs]
+
+# Installs Node.js if missing and makes it the global default; projects
+# can override with their own .mise.toml / .tool-versions
+- name: "Set Node.js {{ nodejs_version }} as global default via mise"
+  become: false
+  command: "mise use --global node@{{ nodejs_version }}"
+  changed_when: mise_node_where.rc != 0
+  tags: [nodejs]
+
+- name: Set node and npm binary paths (mise shims)
+  set_fact:
+    node_bin: "{{ user_home }}/.local/share/mise/shims/node"
+    npm_bin: "{{ user_home }}/.local/share/mise/shims/npm"
+  tags: [nodejs]
+
+# Clean up leftovers from the previous install methods so an old Node.js
+# doesn't shadow the mise-managed one on PATH
+- name: Remove legacy Homebrew Node.js (macOS)
+  become: false
+  community.general.homebrew:
+    name: node
+    state: absent
   when: ansible_facts.os_family == "Darwin"
   tags: [nodejs]
 
-- name: Install Node.js on Debian-based systems
-  import_tasks: debian.yml
+- name: Remove legacy NodeSource apt repository (Debian)
+  become: true
+  ansible.builtin.deb822_repository:
+    name: nodesource
+    state: absent
   when: ansible_facts.os_family == "Debian"
   tags: [nodejs]
 
-- name: Install Node.js on Arch Linux
-  import_tasks: arch.yml
+- name: Remove legacy NodeSource files and apt Node.js (Debian)
+  become: true
+  apt:
+    name: nodejs
+    state: absent
+  when: ansible_facts.os_family == "Debian"
+  tags: [nodejs]
+
+- name: Remove legacy NodeSource keyring and sources (Debian)
+  become: true
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /etc/apt/sources.list.d/nodesource.list
+    - /usr/share/keyrings/nodesource.gpg
+  when: ansible_facts.os_family == "Debian"
+  tags: [nodejs]
+
+- name: Remove legacy pacman Node.js (Arch)
+  become: true
+  package:
+    name:
+      - nodejs
+      - npm
+    state: absent
   when: ansible_facts.os_family == "Archlinux"
   tags: [nodejs]
 
-# Only Debian's NodeSource package ships a `nodejs` binary, so check the
-# names that exist on every platform
 - name: Verify node and npm
-  command: "{{ item }}"
+  become: false
+  command: "{{ item }} --version"
   loop:
-    - node --version
-    - npm --version
+    - "{{ node_bin }}"
+    - "{{ npm_bin }}"
   register: node_check
   changed_when: false
   tags: [nodejs]

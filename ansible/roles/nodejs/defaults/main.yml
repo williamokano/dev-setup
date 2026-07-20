@@ -1,1 +1,2 @@
+# Major version; mise resolves it to the newest matching release
 nodejs_version: "24"
