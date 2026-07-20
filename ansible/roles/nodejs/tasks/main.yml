@@ -13,11 +13,13 @@
   when: ansible_facts.os_family == "Archlinux"
   tags: [nodejs]
 
-- name: Verify node and nodejs
+# Only Debian's NodeSource package ships a `nodejs` binary, so check the
+# names that exist on every platform
+- name: Verify node and npm
   command: "{{ item }}"
   loop:
     - node --version
-    - nodejs --version
+    - npm --version
   register: node_check
   changed_when: false
   tags: [nodejs]

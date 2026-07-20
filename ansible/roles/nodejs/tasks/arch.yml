@@ -1,6 +1,8 @@
 - name: Install Node.js on Arch Linux
   become: true
   package:
-    name: nodejs
+    name:
+      - nodejs
+      - npm
     state: present
   tags: [nodejs]
