@@ -1,0 +1,8 @@
+# "go" compiles with the Go toolchain installed by the go role;
+# "release" downloads the precompiled binary from GitHub releases
+claude_status_line_install_method: go
+
+# Release tag without the leading v (e.g. "1.1.3"), or "latest"
+claude_status_line_version: latest
+
+claude_status_line_repo: williamokano/claude-status-line-go

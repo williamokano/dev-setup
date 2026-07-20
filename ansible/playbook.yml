@@ -12,6 +12,7 @@
     - go
     - gemini_cli
     - claude_code
+    - claude_status_line
     - terminal
     - neovim
     - keyboard_layout

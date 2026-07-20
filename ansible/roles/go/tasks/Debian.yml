@@ -39,6 +39,12 @@
         mode: '0755'
       become: true
 
+- name: Set go binary path (Linux)
+  ansible.builtin.set_fact:
+    go_bin: "{{ go_install_dir }}/go/bin/go"
+  tags:
+    - go
+
 - name: Verify go executable exists
   ansible.builtin.stat:
     path: "{{ go_install_dir }}/go/bin/go"

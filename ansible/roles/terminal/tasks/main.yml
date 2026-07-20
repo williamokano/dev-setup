@@ -8,17 +8,8 @@
     - terminal
     - tmux
 
-- name: Install tmux plugins via TPM (non-interactive)
-  become: false
-  command: "{{ user_home }}/.tmux/plugins/tpm/bin/install_plugins"
-  environment:
-    TMUX_PLUGIN_MANAGER_PATH: "{{ user_home }}/.tmux/plugins"
-  changed_when: false
-  tags:
-    - terminal
-    - tmux
-    - tpm
-
+# The tmux config must be in place before TPM runs — install_plugins reads
+# the plugin list from .tmux.conf
 - name: Stow terminal dotfiles
   become: false
   command: stow {{ item }}
@@ -31,3 +22,15 @@
   tags:
     - terminal
     - stow
+
+- name: Install tmux plugins via TPM (non-interactive)
+  become: false
+  command: "{{ user_home }}/.tmux/plugins/tpm/bin/install_plugins"
+  environment:
+    TMUX_PLUGIN_MANAGER_PATH: "{{ user_home }}/.tmux/plugins"
+  register: tpm_install
+  changed_when: "'Installing' in tpm_install.stdout"
+  tags:
+    - terminal
+    - tmux
+    - tpm

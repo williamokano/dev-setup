@@ -4,33 +4,67 @@
     name: "go@{{ go_version.split('.')[0] }}.{{ go_version.split('.')[1] }}"
     state: present
 
-- name: Verify go executable exists (macOS)
-  ansible.builtin.command: "which go"
-  register: go_binary_path
+# Versioned go@ formulae are keg-only: brew never links them into PATH
+- name: Get Homebrew keg prefix for Go (macOS)
+  ansible.builtin.command: "brew --prefix go@{{ go_version.split('.')[0] }}.{{ go_version.split('.')[1] }}"
+  register: go_brew_prefix
   changed_when: false
-  failed_when: false
+  tags:
+    - go
+
+- name: Set go binary path (macOS)
+  ansible.builtin.set_fact:
+    go_bin: "{{ go_brew_prefix.stdout }}/bin/go"
+  tags:
+    - go
+
+- name: Ensure local bin directory exists (macOS)
+  ansible.builtin.file:
+    path: "{{ user_home }}/.local/bin"
+    state: directory
+    mode: "0755"
+  tags:
+    - go
+
+- name: Symlink Go binaries into ~/.local/bin (macOS)
+  ansible.builtin.file:
+    src: "{{ go_brew_prefix.stdout }}/bin/{{ item }}"
+    dest: "{{ user_home }}/.local/bin/{{ item }}"
+    state: link
+    force: true
+  loop:
+    - go
+    - gofmt
+  tags:
+    - go
+
+- name: Verify go executable exists (macOS)
+  ansible.builtin.stat:
+    path: "{{ go_bin }}"
+  register: go_binary_stat
+  changed_when: false
   tags:
     - go
 
 - name: Fail if go executable does not exist (macOS)
   ansible.builtin.fail:
-    msg: "Go executable not found in PATH after Homebrew installation."
-  when: go_binary_path.rc != 0
+    msg: "Go executable not found at {{ go_bin }} after Homebrew installation."
+  when: not go_binary_stat.stat.exists
   tags:
     - go
 
 - name: Verify go version (macOS)
-  ansible.builtin.command: "go version"
+  ansible.builtin.command: "{{ go_bin }} version"
   register: go_version_check
   changed_when: false
   failed_when: false
-  when: go_binary_path.rc == 0
+  when: go_binary_stat.stat.exists
   tags:
     - go
 
 - name: Debug installed go version (macOS)
   ansible.builtin.debug:
     msg: "Installed Go version: {{ go_version_check.stdout | default('Not found') }}"
-  when: go_binary_path.rc == 0
+  when: go_binary_stat.stat.exists
   tags:
     - go

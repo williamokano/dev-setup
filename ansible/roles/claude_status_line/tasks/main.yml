@@ -1,0 +1,86 @@
+- name: Ensure local bin directory exists
+  file:
+    path: "{{ user_home }}/.local/bin"
+    state: directory
+    mode: "0755"
+  tags: [claude_status_line]
+
+- name: Install claude-status-line-go via go install
+  become: false
+  command: >-
+    {{ go_bin | default('go') }} install
+    github.com/{{ claude_status_line_repo }}/cmd/claude-status-line-go@{{
+      'latest' if claude_status_line_version == 'latest' else 'v' ~ claude_status_line_version
+    }}
+  environment:
+    GOBIN: "{{ user_home }}/.local/bin"
+  changed_when: false
+  when: claude_status_line_install_method == "go"
+  tags: [claude_status_line]
+
+- name: Install claude-status-line-go from GitHub release
+  when: claude_status_line_install_method == "release"
+  tags: [claude_status_line]
+  block:
+    - name: Check if claude-status-line-go is installed
+      stat:
+        path: "{{ user_home }}/.local/bin/claude-status-line-go"
+      register: csl_binary
+
+    - name: Install precompiled release
+      when: not csl_binary.stat.exists
+      block:
+        - name: Get latest claude-status-line-go release
+          uri:
+            url: "https://api.github.com/repos/{{ claude_status_line_repo }}/releases/latest"
+            return_content: true
+          register: csl_release
+          when: claude_status_line_version == "latest"
+
+        - name: Set release tag
+          set_fact:
+            csl_tag: >-
+              {{
+                csl_release.json.tag_name
+                if claude_status_line_version == 'latest'
+                else 'v' ~ claude_status_line_version
+              }}
+
+        - name: Set download URL
+          set_fact:
+            csl_url: >-
+              https://github.com/{{ claude_status_line_repo }}/releases/download/{{
+              csl_tag }}/claude-status-line-go_{{ csl_tag | regex_replace('^v', '')
+              }}_{{ ansible_facts.system | lower }}_{{
+              'arm64' if ansible_facts.architecture in ['arm64', 'aarch64'] else 'amd64'
+              }}.tar.gz
+
+        - name: Create extraction directory
+          file:
+            path: /tmp/claude-status-line-go
+            state: directory
+            mode: "0755"
+
+        - name: Download and extract claude-status-line-go
+          unarchive:
+            src: "{{ csl_url }}"
+            dest: /tmp/claude-status-line-go
+            remote_src: true
+
+        - name: Install claude-status-line-go to ~/.local/bin
+          copy:
+            src: /tmp/claude-status-line-go/claude-status-line-go
+            dest: "{{ user_home }}/.local/bin/claude-status-line-go"
+            mode: "0755"
+
+- name: Verify claude-status-line-go binary exists
+  stat:
+    path: "{{ user_home }}/.local/bin/claude-status-line-go"
+  register: csl_installed
+  tags: [claude_status_line]
+
+- name: Fail if claude-status-line-go was not installed
+  fail:
+    msg: "claude-status-line-go not found at {{ user_home }}/.local/bin/claude-status-line-go"
+  when: not csl_installed.stat.exists
+  tags: [claude_status_line]
