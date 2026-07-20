@@ -1,8 +1,28 @@
-- name: Install core packages
+- name: Install core packages (Linux)
   become: true
   package:
     name: "{{ core_packages + ['fd-find'] if ansible_os_family == 'Debian' else core_packages }}"
     state: present
+  when: ansible_system != "Darwin"
+  tags:
+    - core
+
+# Homebrew refuses to run as root, so no become here
+- name: Install core packages (macOS)
+  become: false
+  community.general.homebrew:
+    name: "{{ core_brew_formulae }}"
+    state: present
+  when: ansible_system == "Darwin"
+  tags:
+    - core
+
+- name: Install core cask packages (macOS)
+  become: false
+  community.general.homebrew_cask:
+    name: "{{ core_brew_casks }}"
+    state: present
+  when: ansible_system == "Darwin"
   tags:
     - core
 
@@ -18,7 +38,7 @@
   tags: [core, telescope]
 
 - name: Try installing lazygit via package manager
-  become: true
+  become: "{{ ansible_system != 'Darwin' }}"
   package:
     name: lazygit
     state: present

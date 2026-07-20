@@ -15,9 +15,22 @@ install_ansible_linux() {
 }
 
 if [[ "$OS" == "Darwin" ]]; then
+  if [[ "$EUID" -eq 0 ]]; then
+    echo "✖ Do not run this script with sudo on macOS — Homebrew refuses to run as root." >&2
+    echo "  Run it as your regular user; Ansible will ask for your sudo password when needed." >&2
+    exit 1
+  fi
   if ! command -v brew >/dev/null; then
     echo "▶ Installing Homebrew..."
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  fi
+  # A fresh Homebrew install is not on PATH yet in this shell
+  if ! command -v brew >/dev/null; then
+    if [[ -x /opt/homebrew/bin/brew ]]; then
+      eval "$(/opt/homebrew/bin/brew shellenv)"
+    elif [[ -x /usr/local/bin/brew ]]; then
+      eval "$(/usr/local/bin/brew shellenv)"
+    fi
   fi
   brew install ansible git curl
 else

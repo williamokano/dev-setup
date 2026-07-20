@@ -6,3 +6,15 @@ core_packages:
   - bash
   - alacritty
   - tmux
+
+core_brew_formulae:
+  - git
+  - curl
+  - stow
+  - ripgrep
+  - bash
+  - tmux
+
+# GUI apps are casks on macOS, not formulae
+core_brew_casks:
+  - alacritty

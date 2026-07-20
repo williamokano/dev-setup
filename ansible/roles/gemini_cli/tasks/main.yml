@@ -1,5 +1,7 @@
+# On macOS npm lives in the user-writable Homebrew prefix; running it as
+# root would leave root-owned files there and break brew
 - name: Install Gemini CLI globally
-  become: true
+  become: "{{ ansible_system != 'Darwin' }}"
   npm:
     name: "@google/gemini-cli"
     global: true
