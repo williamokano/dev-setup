@@ -10,6 +10,8 @@
     repo: "{{ dotfiles_repo_ssh }}"
     dest: "{{ dotfiles_dir }}"
     version: main
+    key_file: "{{ git_ssh_key | default(omit, true) }}"
+    accept_newhostkey: true
   when: not dotfiles_repo.stat.exists
   tags:
     - dotfiles
@@ -40,6 +42,8 @@
         dest: "{{ dotfiles_dir }}"
         version: main
         update: true
+        key_file: "{{ git_ssh_key | default(omit, true) }}"
+        accept_newhostkey: true
       tags:
         - dotfiles
 

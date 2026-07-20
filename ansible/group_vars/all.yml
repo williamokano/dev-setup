@@ -1,3 +1,8 @@
 user_home: "{{ lookup('env', 'HOME') }}"
 config_dir: "{{ user_home }}/.config"
 dotfiles_dir: "{{ user_home }}/.dotfiles"
+
+# SSH key used for git operations against private repos (empty = ssh defaults).
+# Set via the DEV_SETUP_SSH_KEY env var (bootstrap.sh loads it into ssh-agent
+# so passphrase-protected keys work) or override with -e git_ssh_key=...
+git_ssh_key: "{{ lookup('env', 'DEV_SETUP_SSH_KEY') | expanduser }}"
