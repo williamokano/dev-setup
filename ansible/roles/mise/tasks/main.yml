@@ -1,0 +1,49 @@
+- name: Install mise on macOS
+  import_tasks: darwin.yml
+  when: ansible_facts.os_family == "Darwin"
+  tags: [mise]
+
+- name: Install mise on Debian-based systems
+  import_tasks: debian.yml
+  when: ansible_facts.os_family == "Debian"
+  tags: [mise]
+
+- name: Install mise on Arch Linux
+  import_tasks: arch.yml
+  when: ansible_facts.os_family == "Archlinux"
+  tags: [mise]
+
+- name: Activate mise in .bashrc
+  become: false
+  blockinfile:
+    path: "{{ user_home }}/.bashrc"
+    create: true
+    marker: "# {mark} ANSIBLE MANAGED MISE"
+    block: |
+      if command -v mise >/dev/null; then
+        eval "$(mise activate bash)"
+      fi
+  tags: [mise]
+
+- name: Activate mise in .zshrc
+  become: false
+  blockinfile:
+    path: "{{ user_home }}/.zshrc"
+    create: true
+    marker: "# {mark} ANSIBLE MANAGED MISE"
+    block: |
+      if command -v mise >/dev/null; then
+        eval "$(mise activate zsh)"
+      fi
+  tags: [mise]
+
+- name: Verify mise installation
+  command: mise --version
+  register: mise_version
+  changed_when: false
+  tags: [mise]
+
+- name: Debug installed mise version
+  debug:
+    msg: "Installed mise version: {{ mise_version.stdout }}"
+  tags: [mise]

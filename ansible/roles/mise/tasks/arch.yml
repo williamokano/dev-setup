@@ -1,0 +1,6 @@
+- name: Install mise via pacman
+  become: true
+  package:
+    name: mise
+    state: present
+  tags: [mise]

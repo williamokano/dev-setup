@@ -1,0 +1,6 @@
+- name: Install mise via Homebrew
+  become: false
+  community.general.homebrew:
+    name: mise
+    state: present
+  tags: [mise]

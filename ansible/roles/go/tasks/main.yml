@@ -1,9 +1,65 @@
 ---
-- name: Include OS-specific installation tasks
-  ansible.builtin.include_tasks: "{{ item }}"
-  with_first_found:
-    - files:
-        - "{{ ansible_facts.distribution }}-{{ ansible_facts.distribution_major_version }}.yml"
-        - "{{ ansible_facts.distribution }}.yml"
-        - "{{ ansible_facts.os_family }}.yml"
-      skip: true
+- name: Check installed Go versions in mise
+  become: false
+  command: mise ls --installed go
+  register: mise_go_list
+  changed_when: false
+  failed_when: false
+  tags: [go]
+
+# Installs Go if missing and makes it the global default; projects can
+# override with their own .mise.toml / .tool-versions
+- name: "Set Go {{ go_version }} as global default via mise"
+  become: false
+  command: "mise use --global go@{{ go_version }}"
+  changed_when: go_version not in mise_go_list.stdout
+  tags: [go]
+
+- name: Set go binary path (mise shim)
+  set_fact:
+    go_bin: "{{ user_home }}/.local/share/mise/shims/go"
+  tags: [go]
+
+# Clean up leftovers from the previous install methods so an old Go
+# doesn't shadow the mise-managed one on PATH
+- name: Remove legacy tarball Go installation (Linux)
+  become: true
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /usr/local/go
+    - /etc/profile.d/go.sh
+  when: ansible_facts.system == "Linux"
+  tags: [go]
+
+- name: Remove legacy Homebrew Go keg (macOS)
+  become: false
+  community.general.homebrew:
+    name: "go@{{ go_version.split('.')[0] }}.{{ go_version.split('.')[1] }}"
+    state: absent
+  when: ansible_facts.os_family == "Darwin"
+  tags: [go]
+
+- name: Remove legacy Go symlinks from ~/.local/bin (macOS)
+  become: false
+  file:
+    path: "{{ user_home }}/.local/bin/{{ item }}"
+    state: absent
+  loop:
+    - go
+    - gofmt
+  when: ansible_facts.os_family == "Darwin"
+  tags: [go]
+
+- name: Verify go version
+  become: false
+  command: "{{ go_bin }} version"
+  register: go_version_check
+  changed_when: false
+  tags: [go]
+
+- name: Debug installed go version
+  debug:
+    msg: "Installed Go version: {{ go_version_check.stdout }}"
+  tags: [go]

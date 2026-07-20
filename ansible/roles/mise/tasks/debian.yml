@@ -1,0 +1,23 @@
+# mise's documented install path for Debian 11+ / Ubuntu 22.04+ is via extrepo
+- name: Install extrepo
+  become: true
+  apt:
+    name: extrepo
+    state: present
+    update_cache: yes
+  tags: [mise]
+
+- name: Enable mise repository via extrepo
+  become: true
+  command: extrepo enable mise
+  args:
+    creates: /etc/apt/sources.list.d/extrepo_mise.sources
+  tags: [mise]
+
+- name: Install mise
+  become: true
+  apt:
+    name: mise
+    state: present
+    update_cache: yes
+  tags: [mise]
