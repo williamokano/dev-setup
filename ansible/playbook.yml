@@ -11,6 +11,12 @@
     - mise
     - nodejs
     - go
+    - python
+    - terraform
+    - jq
+    - yq
+    - direnv
+    - gh
     - gemini_cli
     - claude_code
     - claude_status_line

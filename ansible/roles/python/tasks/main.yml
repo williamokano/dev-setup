@@ -1,0 +1,36 @@
+- name: "Check if Python {{ python_version }} is installed via mise"
+  become: false
+  command: "mise where python@{{ python_version }}"
+  register: mise_python_where
+  changed_when: false
+  failed_when: false
+  tags: [python]
+
+# Installs Python if missing and makes it the global default; projects
+# can override with their own .mise.toml / .tool-versions
+- name: "Set Python {{ python_version }} as global default via mise"
+  become: false
+  command: "mise use --global python@{{ python_version }}"
+  changed_when: mise_python_where.rc != 0
+  tags: [python]
+
+# Not cleaning up any existing Homebrew/system python here: unlike go/nodejs,
+# this repo never installed python itself, and other formulae (e.g. ansible)
+# may depend on a Homebrew python keg, so removing it could break them.
+
+- name: Set python binary path (mise shim)
+  set_fact:
+    python_bin: "{{ user_home }}/.local/share/mise/shims/python"
+  tags: [python]
+
+- name: Verify python version
+  become: false
+  command: "{{ python_bin }} --version"
+  register: python_version_check
+  changed_when: false
+  tags: [python]
+
+- name: Debug installed python version
+  debug:
+    msg: "Installed Python version: {{ python_version_check.stdout }}"
+  tags: [python]

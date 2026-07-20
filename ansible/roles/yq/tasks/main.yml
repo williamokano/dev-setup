@@ -1,0 +1,32 @@
+- name: "Check if yq {{ yq_version }} is installed via mise"
+  become: false
+  command: "mise where yq@{{ yq_version }}"
+  register: mise_yq_where
+  changed_when: false
+  failed_when: false
+  tags: [yq]
+
+# Installs yq if missing and makes it the global default; projects
+# can override with their own .mise.toml / .tool-versions
+- name: "Set yq {{ yq_version }} as global default via mise"
+  become: false
+  command: "mise use --global yq@{{ yq_version }}"
+  changed_when: mise_yq_where.rc != 0
+  tags: [yq]
+
+- name: Set yq binary path (mise shim)
+  set_fact:
+    yq_bin: "{{ user_home }}/.local/share/mise/shims/yq"
+  tags: [yq]
+
+- name: Verify yq version
+  become: false
+  command: "{{ yq_bin }} --version"
+  register: yq_version_check
+  changed_when: false
+  tags: [yq]
+
+- name: Debug installed yq version
+  debug:
+    msg: "Installed yq version: {{ yq_version_check.stdout }}"
+  tags: [yq]

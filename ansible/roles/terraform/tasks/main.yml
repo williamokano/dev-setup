@@ -1,0 +1,32 @@
+- name: "Check if Terraform {{ terraform_version }} is installed via mise"
+  become: false
+  command: "mise where terraform@{{ terraform_version }}"
+  register: mise_terraform_where
+  changed_when: false
+  failed_when: false
+  tags: [terraform]
+
+# Installs Terraform if missing and makes it the global default; projects
+# can override with their own .mise.toml / .tool-versions
+- name: "Set Terraform {{ terraform_version }} as global default via mise"
+  become: false
+  command: "mise use --global terraform@{{ terraform_version }}"
+  changed_when: mise_terraform_where.rc != 0
+  tags: [terraform]
+
+- name: Set terraform binary path (mise shim)
+  set_fact:
+    terraform_bin: "{{ user_home }}/.local/share/mise/shims/terraform"
+  tags: [terraform]
+
+- name: Verify terraform version
+  become: false
+  command: "{{ terraform_bin }} version"
+  register: terraform_version_check
+  changed_when: false
+  tags: [terraform]
+
+- name: Debug installed terraform version
+  debug:
+    msg: "Installed Terraform version: {{ terraform_version_check.stdout }}"
+  tags: [terraform]

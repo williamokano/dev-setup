@@ -1,0 +1,56 @@
+- name: "Check if direnv {{ direnv_version }} is installed via mise"
+  become: false
+  command: "mise where direnv@{{ direnv_version }}"
+  register: mise_direnv_where
+  changed_when: false
+  failed_when: false
+  tags: [direnv]
+
+# Installs direnv if missing and makes it the global default; projects
+# can override with their own .mise.toml / .tool-versions
+- name: "Set direnv {{ direnv_version }} as global default via mise"
+  become: false
+  command: "mise use --global direnv@{{ direnv_version }}"
+  changed_when: mise_direnv_where.rc != 0
+  tags: [direnv]
+
+- name: Set direnv binary path (mise shim)
+  set_fact:
+    direnv_bin: "{{ user_home }}/.local/share/mise/shims/direnv"
+  tags: [direnv]
+
+- name: Verify direnv version
+  become: false
+  command: "{{ direnv_bin }} --version"
+  register: direnv_version_check
+  changed_when: false
+  tags: [direnv]
+
+- name: Debug installed direnv version
+  debug:
+    msg: "Installed direnv version: {{ direnv_version_check.stdout }}"
+  tags: [direnv]
+
+- name: Activate direnv in .bashrc
+  become: false
+  blockinfile:
+    path: "{{ user_home }}/.bashrc"
+    create: true
+    marker: "# {mark} ANSIBLE MANAGED DIRENV"
+    block: |
+      if command -v direnv >/dev/null; then
+        eval "$(direnv hook bash)"
+      fi
+  tags: [direnv]
+
+- name: Activate direnv in .zshrc
+  become: false
+  blockinfile:
+    path: "{{ user_home }}/.zshrc"
+    create: true
+    marker: "# {mark} ANSIBLE MANAGED DIRENV"
+    block: |
+      if command -v direnv >/dev/null; then
+        eval "$(direnv hook zsh)"
+      fi
+  tags: [direnv]

@@ -1,0 +1,32 @@
+- name: "Check if gh {{ gh_version }} is installed via mise"
+  become: false
+  command: "mise where gh@{{ gh_version }}"
+  register: mise_gh_where
+  changed_when: false
+  failed_when: false
+  tags: [gh]
+
+# Installs gh if missing and makes it the global default; projects
+# can override with their own .mise.toml / .tool-versions
+- name: "Set gh {{ gh_version }} as global default via mise"
+  become: false
+  command: "mise use --global gh@{{ gh_version }}"
+  changed_when: mise_gh_where.rc != 0
+  tags: [gh]
+
+- name: Set gh binary path (mise shim)
+  set_fact:
+    gh_bin: "{{ user_home }}/.local/share/mise/shims/gh"
+  tags: [gh]
+
+- name: Verify gh version
+  become: false
+  command: "{{ gh_bin }} --version"
+  register: gh_version_check
+  changed_when: false
+  tags: [gh]
+
+- name: Debug installed gh version
+  debug:
+    msg: "Installed gh version: {{ gh_version_check.stdout }}"
+  tags: [gh]

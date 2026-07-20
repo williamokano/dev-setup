@@ -1,0 +1,32 @@
+- name: "Check if jq {{ jq_version }} is installed via mise"
+  become: false
+  command: "mise where jq@{{ jq_version }}"
+  register: mise_jq_where
+  changed_when: false
+  failed_when: false
+  tags: [jq]
+
+# Installs jq if missing and makes it the global default; projects
+# can override with their own .mise.toml / .tool-versions
+- name: "Set jq {{ jq_version }} as global default via mise"
+  become: false
+  command: "mise use --global jq@{{ jq_version }}"
+  changed_when: mise_jq_where.rc != 0
+  tags: [jq]
+
+- name: Set jq binary path (mise shim)
+  set_fact:
+    jq_bin: "{{ user_home }}/.local/share/mise/shims/jq"
+  tags: [jq]
+
+- name: Verify jq version
+  become: false
+  command: "{{ jq_bin }} --version"
+  register: jq_version_check
+  changed_when: false
+  tags: [jq]
+
+- name: Debug installed jq version
+  debug:
+    msg: "Installed jq version: {{ jq_version_check.stdout }}"
+  tags: [jq]
