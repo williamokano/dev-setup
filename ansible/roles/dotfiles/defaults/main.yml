@@ -1,2 +1,16 @@
 dotfiles_repo_https: https://github.com/williamokano/dotfiles.git
 dotfiles_repo_ssh: git@github.com:williamokano/dotfiles.git
+
+# Active packages, stowed on every OS
+dotfiles_common_packages:
+  - alacritty
+  - tmux
+  - nvim
+  - git
+  - shell
+
+# XCompose is an X11 mechanism, so it's Linux-only
+dotfiles_linux_packages:
+  - XCompose
+
+dotfiles_packages: "{{ dotfiles_common_packages + (dotfiles_linux_packages if ansible_facts.os_family == 'Debian' else []) }}"

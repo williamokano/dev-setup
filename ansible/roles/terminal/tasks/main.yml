@@ -12,7 +12,7 @@
 # the plugin list from .tmux.conf
 - name: Stow terminal dotfiles
   become: false
-  command: stow {{ item }}
+  command: "stow -t {{ user_home }} {{ item }}"
   args:
     chdir: "{{ dotfiles_dir }}"
   loop:

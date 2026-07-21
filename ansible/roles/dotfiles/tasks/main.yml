@@ -58,12 +58,10 @@
 
 - name: Stow dotfiles
   become: false
-  command: stow {{ item }}
+  command: "stow -t {{ user_home }} {{ item }}"
   args:
     chdir: "{{ dotfiles_dir }}"
-  loop:
-    - XCompose
-  when: ansible_facts.os_family == 'Debian'
+  loop: "{{ dotfiles_packages }}"
   changed_when: false
   tags:
     - dotfiles

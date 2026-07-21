@@ -65,7 +65,7 @@
 
 - name: Stow shell config
   become: false
-  command: stow shell
+  command: "stow -t {{ user_home }} shell"
   args:
     chdir: "{{ dotfiles_dir }}"
   changed_when: false

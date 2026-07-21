@@ -63,7 +63,7 @@
 # Stow Neovim config
 # -------------------------
 - name: Stow Neovim config
-  command: stow nvim
+  command: "stow -t {{ user_home }} nvim"
   args:
     chdir: "{{ dotfiles_dir }}"
   changed_when: false
