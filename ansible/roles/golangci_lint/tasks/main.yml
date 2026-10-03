@@ -1,0 +1,33 @@
+- name: "Check if golangci-lint {{ golangci_lint_version }} is installed via mise"
+  become: false
+  command: "mise where golangci-lint@{{ golangci_lint_version }}"
+  register: mise_golangci_lint_where
+  changed_when: false
+  failed_when: false
+  tags: [golangci_lint]
+
+# Installs the prebuilt release binary (upstream discourages `go install`)
+# and makes it the global default; projects can override with their own
+# .mise.toml / .tool-versions
+- name: "Set golangci-lint {{ golangci_lint_version }} as global default via mise"
+  become: false
+  command: "mise use --global golangci-lint@{{ golangci_lint_version }}"
+  changed_when: mise_golangci_lint_where.rc != 0
+  tags: [golangci_lint]
+
+- name: Set golangci-lint binary path (mise shim)
+  set_fact:
+    golangci_lint_bin: "{{ user_home }}/.local/share/mise/shims/golangci-lint"
+  tags: [golangci_lint]
+
+- name: Verify golangci-lint version
+  become: false
+  command: "{{ golangci_lint_bin }} version"
+  register: golangci_lint_version_check
+  changed_when: false
+  tags: [golangci_lint]
+
+- name: Debug installed golangci-lint version
+  debug:
+    msg: "Installed golangci-lint version: {{ golangci_lint_version_check.stdout }}"
+  tags: [golangci_lint]

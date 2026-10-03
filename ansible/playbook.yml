@@ -11,6 +11,7 @@
     - mise
     - nodejs
     - go
+    - golangci_lint
     - python
     - uv
     - terraform
