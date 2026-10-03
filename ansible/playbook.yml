@@ -12,6 +12,7 @@
     - nodejs
     - go
     - python
+    - uv
     - terraform
     - java
     - k6

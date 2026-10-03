@@ -1,0 +1,32 @@
+- name: "Check if uv {{ uv_version }} is installed via mise"
+  become: false
+  command: "mise where uv@{{ uv_version }}"
+  register: mise_uv_where
+  changed_when: false
+  failed_when: false
+  tags: [uv]
+
+# Installs uv if missing and makes it the global default; projects
+# can override with their own .mise.toml / .tool-versions
+- name: "Set uv {{ uv_version }} as global default via mise"
+  become: false
+  command: "mise use --global uv@{{ uv_version }}"
+  changed_when: mise_uv_where.rc != 0
+  tags: [uv]
+
+- name: Set uv binary path (mise shim)
+  set_fact:
+    uv_bin: "{{ user_home }}/.local/share/mise/shims/uv"
+  tags: [uv]
+
+- name: Verify uv version
+  become: false
+  command: "{{ uv_bin }} --version"
+  register: uv_version_check
+  changed_when: false
+  tags: [uv]
+
+- name: Debug installed uv version
+  debug:
+    msg: "Installed uv version: {{ uv_version_check.stdout }}"
+  tags: [uv]
