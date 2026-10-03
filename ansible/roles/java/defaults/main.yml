@@ -1,3 +1,3 @@
 ---
 # Full mise identifier (vendor-version); list options with `mise ls-remote java`
-java_version: "temurin-21.0.11+10.0.LTS"
+java_version: "temurin-21.0.12+101.0.LTS"
