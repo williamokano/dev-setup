@@ -1,0 +1,32 @@
+- name: "Check if Java {{ java_version }} is installed via mise"
+  become: false
+  command: "mise where java@{{ java_version }}"
+  register: mise_java_where
+  changed_when: false
+  failed_when: false
+  tags: [java]
+
+# Installs Java if missing and makes it the global default; projects
+# can override with their own .mise.toml / .tool-versions
+- name: "Set Java {{ java_version }} as global default via mise"
+  become: false
+  command: "mise use --global java@{{ java_version }}"
+  changed_when: mise_java_where.rc != 0
+  tags: [java]
+
+- name: Set java binary path (mise shim)
+  set_fact:
+    java_bin: "{{ user_home }}/.local/share/mise/shims/java"
+  tags: [java]
+
+- name: Verify java version
+  become: false
+  command: "{{ java_bin }} --version"
+  register: java_version_check
+  changed_when: false
+  tags: [java]
+
+- name: Debug installed java version
+  debug:
+    msg: "Installed Java version: {{ java_version_check.stdout_lines[0] }}"
+  tags: [java]

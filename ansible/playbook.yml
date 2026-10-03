@@ -13,6 +13,8 @@
     - go
     - python
     - terraform
+    - java
+    - k6
     - jq
     - yq
     - direnv
